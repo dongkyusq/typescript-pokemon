@@ -1,35 +1,28 @@
-// `app/(pokemonPage)/pages/pokemon/[id]/page.tsx`
-
-"use client";
-
-import { useEffect, useState } from "react";
 import Navigation from "./navigation";
 
-export default function PokemonDetail({ params }: { params: { id: string } }) {
-  const [pokemon, setPokemon] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default async function PokemonDetail({
+  params,
+}: {
+  params: { id: string };
+}) {
+  let pokemon = null;
+  let error = null;
 
-  useEffect(() => {
-    async function fetchPokemonData() {
-      try {
-        const response = await fetch(`/api/pokemons/${params.id}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch data");
-        }
-        const data = await response.json();
-        setPokemon(data);
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
+  try {
+    const response = await fetch(
+      `http://localhost:3000/api/pokemons/${params.id}`,
+      {
+        cache: "no-store",
       }
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch data");
     }
+    pokemon = await response.json();
+  } catch (err) {
+    error = (err as Error).message;
+  }
 
-    fetchPokemonData();
-  }, [params.id]);
-
-  if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
   if (!pokemon) return <p>포켓몬 데이터를 불러오지 못했습니다.</p>;
 
@@ -45,7 +38,6 @@ export default function PokemonDetail({ params }: { params: { id: string } }) {
           alt={pokemon.korean_name}
           className="w-48 h-48 mx-auto"
         />
-
         <p className="text-red-600">키: {pokemon.height}0cm</p>
         <p className="text-red-600">몸무게: {pokemon.weight / 10} kg</p>
         <div>
